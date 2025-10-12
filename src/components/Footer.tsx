@@ -17,8 +17,8 @@ export const Footer = () => {
               Tu kompa de confianza para préstamos personales rápidos y seguros en Perú.
             </p>
             <div className="text-sm text-muted-foreground">
-              <p className="font-semibold">RUC: 20123456789</p>
-              <p className="mt-1">TuKompa S.A.C.</p>
+              <p className="font-semibold">RUC: 20612345678</p>
+              <p className="mt-1">TuKompa SAC</p>
             </div>
           </div>
 
@@ -27,23 +27,23 @@ export const Footer = () => {
             <h3 className="font-semibold mb-4">Enlaces rápidos</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#nosotros" className="text-muted-foreground hover:text-primary transition-smooth">
+                <a href="/about" className="text-muted-foreground hover:text-primary transition-smooth">
                   Nosotros
                 </a>
               </li>
               <li>
-                <a href="#faq" className="text-muted-foreground hover:text-primary transition-smooth">
+                <a href="/#faq" className="text-muted-foreground hover:text-primary transition-smooth">
                   Preguntas frecuentes
                 </a>
               </li>
               <li>
-                <a href="#contacto" className="text-muted-foreground hover:text-primary transition-smooth">
+                <a href="/#contacto" className="text-muted-foreground hover:text-primary transition-smooth">
                   Contacto
                 </a>
               </li>
               <li>
-                <a href="/portal" className="text-muted-foreground hover:text-primary transition-smooth">
-                  Mi Portal
+                <a href="/complaints-book" className="text-muted-foreground hover:text-primary transition-smooth">
+                  Libro de Reclamaciones
                 </a>
               </li>
             </ul>
@@ -54,17 +54,17 @@ export const Footer = () => {
             <h3 className="font-semibold mb-4">Legal</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="/terminos" className="text-muted-foreground hover:text-primary transition-smooth">
+                <a href="/terms" className="text-muted-foreground hover:text-primary transition-smooth">
                   Términos y condiciones
                 </a>
               </li>
               <li>
-                <a href="/privacidad" className="text-muted-foreground hover:text-primary transition-smooth">
+                <a href="/privacy" className="text-muted-foreground hover:text-primary transition-smooth">
                   Política de privacidad
                 </a>
               </li>
               <li>
-                <a href="/libro-reclamaciones" className="text-muted-foreground hover:text-primary transition-smooth">
+                <a href="/complaints-book" className="text-muted-foreground hover:text-primary transition-smooth">
                   Libro de reclamaciones
                 </a>
               </li>
@@ -91,8 +91,8 @@ export const Footer = () => {
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 mt-0.5 text-primary flex-shrink-0" />
                 <p className="text-muted-foreground">
-                  Av. Javier Prado 123<br />
-                  San Isidro, Lima - Perú
+                  Av. Javier Prado Este 123<br />
+                  San Isidro, Lima, Perú
                 </p>
               </li>
             </ul>
@@ -100,7 +100,7 @@ export const Footer = () => {
         </div>
 
         <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} TuKompa S.A.C. Todos los derechos reservados.</p>
+          <p>© {new Date().getFullYear()} TuKompa SAC. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>

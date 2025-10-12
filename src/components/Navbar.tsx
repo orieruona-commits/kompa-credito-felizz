@@ -7,7 +7,7 @@ export const Navbar = () => {
 
   const navItems = [
     { label: "Inicio", href: "/" },
-    { label: "Nosotros", href: "#nosotros" },
+    { label: "Nosotros", href: "/about" },
     { label: "¿Dudas?", href: "#faq" },
     { label: "Contacto", href: "#contacto" },
   ];
