@@ -78,14 +78,14 @@ export const Footer = () => {
               <li className="flex items-start gap-2">
                 <Phone className="w-4 h-4 mt-0.5 text-primary flex-shrink-0" />
                 <div>
-                  <p className="text-muted-foreground">+51 999 888 777</p>
+                  <p className="text-muted-foreground">+234 802 562 6573</p>
                   <p className="text-xs text-muted-foreground">Lun - Vie: 9am - 6pm</p>
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <Mail className="w-4 h-4 mt-0.5 text-primary flex-shrink-0" />
-                <a href="mailto:hola@tukompa.com" className="text-muted-foreground hover:text-primary transition-smooth">
-                  hola@tukompa.com
+                <a href="mailto:tukompaprestamo@gmail.com" className="text-muted-foreground hover:text-primary transition-smooth">
+                  tukompaprestamo@gmail.com
                 </a>
               </li>
               <li className="flex items-start gap-2">

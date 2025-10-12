@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
 
 interface LoanCalculation {
   amount: number;
@@ -11,35 +13,40 @@ interface LoanCalculation {
   paymentType: "monthly" | "single";
   monthlyPayment: number;
   totalPayment: number;
-  tea: number;
-  tcem: number;
+  tea: string;
+  tcem: string;
 }
 
 export const LoanCalculator = () => {
+  const navigate = useNavigate();
   const [amount, setAmount] = useState(2000);
   const [term, setTerm] = useState(6);
   const [paymentType, setPaymentType] = useState<"monthly" | "single">("monthly");
   const [calculation, setCalculation] = useState<LoanCalculation | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // Simple calculation - in production, this would call a backend API
-    const tea = 45.5; // Example TEA (Tasa Efectiva Anual)
-    const monthlyRate = Math.pow(1 + tea / 100, 1 / 12) - 1;
+    // Simplified calculation - in production, this would be done by backend
+    const interestRate = 0.15; // 15% annual rate
+    const monthlyRate = interestRate / 12;
     
-    let monthlyPayment = 0;
-    let totalPayment = 0;
+    let monthlyPayment: number;
+    let totalPayment: number;
     
     if (paymentType === "monthly") {
+      // Calculate monthly payment using amortization formula
       monthlyPayment = amount * (monthlyRate * Math.pow(1 + monthlyRate, term)) / 
-                       (Math.pow(1 + monthlyRate, term) - 1);
+                      (Math.pow(1 + monthlyRate, term) - 1);
       totalPayment = monthlyPayment * term;
     } else {
-      totalPayment = amount * Math.pow(1 + tea / 100, term / 12);
+      // Single payment with compound interest
+      totalPayment = amount * Math.pow(1 + monthlyRate, term);
       monthlyPayment = totalPayment;
     }
     
-    const tcem = ((totalPayment / amount - 1) * 100);
-
+    const tea = ((Math.pow(1 + monthlyRate, 12) - 1) * 100).toFixed(2);
+    const tcem = (monthlyRate * 100).toFixed(2);
+    
     setCalculation({
       amount,
       term,
@@ -50,6 +57,47 @@ export const LoanCalculator = () => {
       tcem
     });
   }, [amount, term, paymentType]);
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    
+    try {
+      // Create application record with "awaiting_fee" status
+      const { data, error } = await supabase
+        .from('applications')
+        .insert({
+          amount,
+          term,
+          payment_type: paymentType,
+          status: 'awaiting_fee',
+          email: '', // Will be filled later
+          phone: null,
+          full_name: null,
+          dni: null
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Navigate to payment instructions page
+      navigate('/payment-instructions', {
+        state: {
+          applicationData: {
+            id: data.id,
+            amount,
+            term,
+            paymentType
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error creating application:', error);
+      alert('Hubo un error al procesar tu solicitud. Por favor, intenta nuevamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Card className="p-6 md:p-8 shadow-soft">
@@ -138,15 +186,20 @@ export const LoanCalculator = () => {
             </div>
             <div className="pt-2 border-t border-border text-xs text-muted-foreground">
               <div className="flex justify-between">
-                <span>TEA: {calculation.tea.toFixed(2)}%</span>
-                <span>TCEM: {calculation.tcem.toFixed(2)}%</span>
+                <span>TEA: {calculation.tea}%</span>
+                <span>TCEM: {calculation.tcem}%</span>
               </div>
             </div>
           </div>
         )}
 
-        <Button className="w-full" size="lg">
-          Revisa tu oferta
+        <Button 
+          className="w-full" 
+          size="lg"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Procesando...' : 'Revisa tu oferta'}
         </Button>
         
         <p className="text-xs text-center text-muted-foreground">
