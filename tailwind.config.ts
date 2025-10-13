@@ -13,6 +13,11 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
+        primary: ['Poppins', 'sans-serif'],
+        secondary: ['Inter', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

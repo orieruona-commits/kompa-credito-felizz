@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import logo from "@/assets/tukompa-logo.png";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -103,12 +104,15 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-primary-glow to-secondary p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Kompa Crédito Feliz</CardTitle>
-          <CardDescription className="text-center">
-            Tu socio financiero de confianza
+    <div className="min-h-screen flex items-center justify-center gradient-hero p-4">
+      <Card className="w-full max-w-md shadow-2xl">
+        <CardHeader className="space-y-4">
+          <div className="flex justify-center">
+            <img src={logo} alt="tuKOMPA Logo" className="h-16 w-auto object-contain" />
+          </div>
+          <CardTitle className="text-2xl font-bold text-center text-primary">Bienvenido a tuKOMPA</CardTitle>
+          <CardDescription className="text-center font-secondary">
+            Tu crédito rápido y seguro
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -142,7 +146,11 @@ export default function Auth() {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-secondary hover:bg-secondary/90 text-white font-bold uppercase" 
+                  disabled={loading}
+                >
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -203,7 +211,11 @@ export default function Auth() {
                     Mínimo 6 caracteres
                   </p>
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-secondary hover:bg-secondary/90 text-white font-bold uppercase" 
+                  disabled={loading}
+                >
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

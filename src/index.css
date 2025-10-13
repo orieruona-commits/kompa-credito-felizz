@@ -2,20 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* tuKOMPA Brand Design System */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 215 25% 15%;
+    /* Base colors */
+    --background: 0 0% 98%;
+    --foreground: 0 0% 18%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 0 0% 18%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 0 0% 18%;
 
     /* Brand Purple - primary color */
     --primary: 277 100% 24%;
@@ -26,62 +25,67 @@ All colors MUST be HSL.
     --secondary: 37 94% 54%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 15% 50%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 0 0% 40%;
 
     --accent: 37 94% 54%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 85% 55%;
+    /* Status colors */
+    --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 20% 90%;
-    --input: 214 20% 90%;
+    --success: 142 71% 45%;
+    --warning: 37 94% 54%;
+    --info: 211 100% 50%;
+
+    --border: 240 6% 90%;
+    --input: 240 6% 95%;
     --ring: 277 100% 24%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(277, 100%, 24%) 0%, hsl(37, 94%, 54%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(210, 25%, 98%) 100%);
+    /* Brand gradient */
+    --gradient-hero: linear-gradient(90deg, hsl(277, 100%, 24%) 0%, hsl(37, 94%, 54%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(240, 5%, 98%) 100%);
     
     /* Shadows */
-    --shadow-soft: 0 4px 20px -2px hsl(214 85% 45% / 0.15);
-    --shadow-card: 0 2px 12px -2px hsl(215 25% 15% / 0.08);
+    --shadow-soft: 0 4px 20px -2px hsl(277 100% 24% / 0.15);
+    --shadow-card: 0 2px 12px -2px hsl(0 0% 18% / 0.08);
     
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    --background: 215 30% 8%;
-    --foreground: 210 20% 95%;
+    --background: 0 0% 10%;
+    --foreground: 0 0% 95%;
 
-    --card: 215 28% 12%;
-    --card-foreground: 210 20% 95%;
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 215 28% 12%;
-    --popover-foreground: 210 20% 95%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 277 100% 30%;
+    --primary: 277 100% 35%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 277 100% 40%;
+    --primary-glow: 277 100% 45%;
 
     --secondary: 37 94% 54%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 215 25% 18%;
-    --muted-foreground: 215 15% 65%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 65%;
 
     --accent: 37 94% 54%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 75% 55%;
+    --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 215 25% 22%;
-    --input: 215 25% 22%;
-    --ring: 277 100% 30%;
+    --border: 0 0% 22%;
+    --input: 0 0% 22%;
+    --ring: 277 100% 35%;
   }
 }
 
@@ -91,11 +95,17 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold tracking-tight;
+    color: hsl(var(--primary));
+  }
+
+  button {
+    @apply transition-smooth;
   }
 }
 
@@ -118,5 +128,13 @@ All colors MUST be HSL.
   
   .transition-smooth {
     transition: var(--transition-smooth);
+  }
+
+  .font-primary {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .font-secondary {
+    font-family: 'Inter', sans-serif;
   }
 }

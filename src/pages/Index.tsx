@@ -4,7 +4,7 @@ import { LoanCalculator } from "@/components/LoanCalculator";
 import { Features } from "@/components/Features";
 import { Testimonials } from "@/components/Testimonials";
 import { Footer } from "@/components/Footer";
-import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 
 const Index = () => {
   return (
@@ -14,8 +14,16 @@ const Index = () => {
         <Hero />
         
         {/* Calculator Section */}
-        <section className="py-16 md:py-20">
+        <section id="loan-calculator" className="py-16 md:py-20 bg-muted/30">
           <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Calcula tu préstamo
+              </h2>
+              <p className="text-lg text-muted-foreground font-secondary">
+                Descubre cuánto puedes obtener y planifica tus pagos
+              </p>
+            </div>
             <div className="max-w-2xl mx-auto">
               <LoanCalculator />
             </div>
@@ -23,8 +31,6 @@ const Index = () => {
         </section>
 
         <Features />
-
-        <Testimonials />
 
         {/* Partners Section */}
         <section className="py-16 bg-background">
@@ -127,7 +133,7 @@ const Index = () => {
         </section>
       </main>
       <Footer />
-      <WhatsAppButton />
+      <FloatingWhatsApp />
     </div>
   );
 };
