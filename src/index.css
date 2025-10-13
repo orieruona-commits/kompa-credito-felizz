@@ -17,19 +17,19 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 15%;
 
-    /* Trust blue - primary brand color */
-    --primary: 214 85% 45%;
+    /* Brand Purple - primary color */
+    --primary: 277 100% 24%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 214 85% 60%;
+    --primary-glow: 277 100% 35%;
 
-    /* Warm green - success/approval */
-    --secondary: 160 70% 45%;
+    /* Brand Orange - accent/success */
+    --secondary: 37 94% 54%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 210 20% 96%;
     --muted-foreground: 215 15% 50%;
 
-    --accent: 170 75% 50%;
+    --accent: 37 94% 54%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 85% 55%;
@@ -37,12 +37,12 @@ All colors MUST be HSL.
 
     --border: 214 20% 90%;
     --input: 214 20% 90%;
-    --ring: 214 85% 45%;
+    --ring: 277 100% 24%;
 
     --radius: 0.75rem;
 
     /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(214, 85%, 45%) 0%, hsl(185, 80%, 50%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(277, 100%, 24%) 0%, hsl(37, 94%, 54%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(210, 25%, 98%) 100%);
     
     /* Shadows */
@@ -63,17 +63,17 @@ All colors MUST be HSL.
     --popover: 215 28% 12%;
     --popover-foreground: 210 20% 95%;
 
-    --primary: 214 85% 55%;
+    --primary: 277 100% 30%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 214 85% 65%;
+    --primary-glow: 277 100% 40%;
 
-    --secondary: 160 65% 50%;
+    --secondary: 37 94% 54%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 215 25% 18%;
     --muted-foreground: 215 15% 65%;
 
-    --accent: 170 70% 55%;
+    --accent: 37 94% 54%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 75% 55%;
@@ -81,7 +81,7 @@ All colors MUST be HSL.
 
     --border: 215 25% 22%;
     --input: 215 25% 22%;
-    --ring: 214 85% 55%;
+    --ring: 277 100% 30%;
   }
 }
 

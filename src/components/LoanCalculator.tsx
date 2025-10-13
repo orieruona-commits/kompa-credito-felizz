@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface LoanCalculation {
   amount: number;
@@ -62,17 +63,33 @@ export const LoanCalculator = () => {
     setIsSubmitting(true);
     
     try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        // Redirect to auth page with return path
+        navigate('/auth', { 
+          state: { 
+            from: '/',
+            message: 'Debes iniciar sesión para solicitar un préstamo' 
+          } 
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       // Create application record with "awaiting_fee" status
       const { data, error } = await supabase
         .from('applications')
         .insert({
+          user_id: session.user.id,
           amount,
           term,
           payment_type: paymentType,
           status: 'awaiting_fee',
-          email: '', // Will be filled later
+          email: session.user.email || '',
           phone: null,
-          full_name: null,
+          full_name: session.user.user_metadata?.full_name || null,
           dni: null
         })
         .select()
@@ -91,9 +108,8 @@ export const LoanCalculator = () => {
           }
         }
       });
-    } catch (error) {
-      console.error('Error creating application:', error);
-      alert('Hubo un error al procesar tu solicitud. Por favor, intenta nuevamente.');
+    } catch (error: any) {
+      toast.error('Hubo un error al procesar tu solicitud. Por favor, intenta nuevamente.');
     } finally {
       setIsSubmitting(false);
     }
