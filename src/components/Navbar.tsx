@@ -8,19 +8,39 @@ import logo from "@/assets/tukompa-logo.png";
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        checkAdminRole(session.user.id);
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        checkAdminRole(session.user.id);
+      } else {
+        setIsAdmin(false);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const checkAdminRole = async (userId: string) => {
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .single();
+    
+    setIsAdmin(!!data);
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-primary backdrop-blur border-b border-primary-glow shadow-md">
@@ -74,6 +94,13 @@ export const Navbar = () => {
               Libro de Reclamaciones
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-secondary transition-all group-hover:w-full"></span>
             </Link>
+            <Link 
+              to="/terminos-de-pago" 
+              className="text-white hover:text-secondary transition-colors font-medium relative group"
+            >
+              Términos de Pago
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-secondary transition-all group-hover:w-full"></span>
+            </Link>
             
             {user ? (
               <div className="flex items-center gap-2">
@@ -86,6 +113,16 @@ export const Navbar = () => {
                   <User className="h-4 w-4 mr-2" />
                   Mi Panel
                 </Button>
+                {isAdmin && (
+                  <Button 
+                    onClick={() => navigate("/admin")} 
+                    variant="outline" 
+                    size="sm"
+                    className="bg-secondary text-white border-secondary hover:bg-secondary/90"
+                  >
+                    Admin
+                  </Button>
+                )}
                 <Button 
                   onClick={() => supabase.auth.signOut()} 
                   variant="ghost" 
@@ -138,6 +175,13 @@ export const Navbar = () => {
                 >
                   Libro de Reclamaciones
                 </Link>
+                <Link 
+                  to="/terminos-de-pago" 
+                  className="text-white hover:bg-primary-glow transition-colors px-4 py-3 rounded font-medium"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Términos de Pago
+                </Link>
                 
                 <div className="pt-2 border-t border-primary-glow mt-2">
                   {user ? (
@@ -150,6 +194,15 @@ export const Navbar = () => {
                         <User className="h-4 w-4 mr-2" />
                         Mi Panel
                       </Button>
+                      {isAdmin && (
+                        <Button 
+                          onClick={() => { navigate("/admin"); setIsOpen(false); }} 
+                          variant="outline" 
+                          className="w-full justify-start mb-2 bg-secondary text-white border-secondary hover:bg-secondary/90"
+                        >
+                          Panel Admin
+                        </Button>
+                      )}
                       <Button 
                         onClick={() => { supabase.auth.signOut(); setIsOpen(false); }} 
                         variant="ghost"
