@@ -137,11 +137,6 @@ const AboutUs = () => {
                     <span className="text-muted-foreground">tukompaprestamo@gmail.com</span>
                   </div>
                   
-                  <div className="flex justify-between py-3 border-b">
-                    <span className="font-semibold">WhatsApp:</span>
-                    <span className="text-muted-foreground">+234 802 562 6573</span>
-                  </div>
-                  
                   <div className="flex justify-between py-3">
                     <span className="font-semibold">Año de fundación:</span>
                     <span className="text-muted-foreground">2023</span>

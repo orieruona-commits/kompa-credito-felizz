@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CheckCircle, Clock, Search, Filter, MessageCircle } from "lucide-react";
+import { CheckCircle, Clock, Search, Filter, MessageCircle, LogOut } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -115,8 +115,8 @@ const AdminDashboard = () => {
       if (error) throw error;
 
       toast({
-        title: "Estado actualizado",
-        description: `El estado ha sido cambiado a: ${getStatusLabel(newStatus)}`,
+        title: "Pago confirmado",
+        description: "El solicitante será notificado.",
       });
 
       loadApplications();
@@ -125,6 +125,24 @@ const AdminDashboard = () => {
       toast({
         title: "Error",
         description: "No se pudo actualizar el estado",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Sesión cerrada",
+        description: "Has cerrado sesión correctamente.",
+      });
+      navigate("/private-admin-2025");
+    } catch (error) {
+      console.error("Error logging out:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo cerrar sesión",
         variant: "destructive",
       });
     }
@@ -198,13 +216,23 @@ const AdminDashboard = () => {
 
       <main className="flex-grow bg-gradient-to-b from-background to-secondary/20 py-8 px-4">
         <div className="container mx-auto max-w-7xl">
-          <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2 text-primary">
-              Panel de Administración
-            </h1>
-            <p className="text-muted-foreground">
-              Gestiona las solicitudes de préstamo y confirma los pagos
-            </p>
+          <div className="mb-8 flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 text-primary">
+                Panel de Administración
+              </h1>
+              <p className="text-muted-foreground">
+                Gestiona las solicitudes de préstamo y confirma los pagos
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+              className="flex items-center gap-2"
+            >
+              <LogOut className="w-4 h-4" />
+              Cerrar sesión
+            </Button>
           </div>
 
           <Card className="p-6 mb-6">

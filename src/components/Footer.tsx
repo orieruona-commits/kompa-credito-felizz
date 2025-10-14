@@ -1,4 +1,4 @@
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
 import logo from "@/assets/tukompa-logo.png";
 
 export const Footer = () => {
@@ -73,13 +73,6 @@ export const Footer = () => {
           <div>
             <h3 className="font-bold mb-4 text-lg">Contacto</h3>
             <ul className="space-y-3 text-sm">
-              <li className="flex items-start gap-2">
-                <Phone className="w-4 h-4 mt-0.5 text-secondary flex-shrink-0" />
-                <div>
-                  <p className="text-white/90">+234 802 562 6573</p>
-                  <p className="text-xs text-white/60">Lun - Vie: 9am - 6pm</p>
-                </div>
-              </li>
               <li className="flex items-start gap-2">
                 <Mail className="w-4 h-4 mt-0.5 text-secondary flex-shrink-0" />
                 <a href="mailto:tukompaprestamo@gmail.com" className="text-white/90 hover:text-secondary transition-colors">
