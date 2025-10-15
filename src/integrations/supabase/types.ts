@@ -16,42 +16,51 @@ export type Database = {
     Tables: {
       applications: {
         Row: {
+          address: string | null
           amount: number
           created_at: string
           dni: string | null
           email: string
           full_name: string | null
           id: string
+          loan_purpose: string | null
           payment_type: string
           phone: string | null
+          preferred_contact_method: string | null
           status: string
           term: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          address?: string | null
           amount: number
           created_at?: string
           dni?: string | null
           email: string
           full_name?: string | null
           id?: string
+          loan_purpose?: string | null
           payment_type: string
           phone?: string | null
+          preferred_contact_method?: string | null
           status?: string
           term: number
           updated_at?: string
           user_id: string
         }
         Update: {
+          address?: string | null
           amount?: number
           created_at?: string
           dni?: string | null
           email?: string
           full_name?: string | null
           id?: string
+          loan_purpose?: string | null
           payment_type?: string
           phone?: string | null
+          preferred_contact_method?: string | null
           status?: string
           term?: number
           updated_at?: string
