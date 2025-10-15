@@ -78,7 +78,6 @@ const AdminDashboard = () => {
       setIsAdmin(true);
       loadApplications();
     } catch (error) {
-      console.error("Error checking admin access:", error);
       navigate("/");
     }
   };
@@ -94,10 +93,9 @@ const AdminDashboard = () => {
       if (error) throw error;
       setApplications(data || []);
     } catch (error) {
-      console.error("Error loading applications:", error);
       toast({
         title: "Error",
-        description: "No se pudieron cargar las solicitudes",
+        description: "No se pudieron cargar las solicitudes. Por favor, intenta nuevamente.",
         variant: "destructive",
       });
     } finally {
@@ -121,10 +119,9 @@ const AdminDashboard = () => {
 
       loadApplications();
     } catch (error) {
-      console.error("Error updating status:", error);
       toast({
         title: "Error",
-        description: "No se pudo actualizar el estado",
+        description: "No se pudo actualizar el estado. Por favor, intenta nuevamente.",
         variant: "destructive",
       });
     }
@@ -139,10 +136,9 @@ const AdminDashboard = () => {
       });
       navigate("/private-admin-2025");
     } catch (error) {
-      console.error("Error logging out:", error);
       toast({
         title: "Error",
-        description: "No se pudo cerrar sesión",
+        description: "No se pudo cerrar sesión. Por favor, intenta nuevamente.",
         variant: "destructive",
       });
     }

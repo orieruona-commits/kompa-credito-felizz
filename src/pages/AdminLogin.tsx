@@ -61,10 +61,9 @@ const AdminLogin = () => {
         navigate("/admin");
       }
     } catch (error) {
-      console.error("Error during login:", error);
       toast({
         title: "Error",
-        description: "Ocurrió un error al iniciar sesión.",
+        description: "Ocurrió un error al iniciar sesión. Por favor, intenta nuevamente.",
         variant: "destructive",
       });
     } finally {
