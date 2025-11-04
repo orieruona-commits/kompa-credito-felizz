@@ -35,9 +35,9 @@ export const Hero = () => {
             </p>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-              Tu préstamo personal,{" "}
+              Préstamos rápidos y fáciles de hasta{" "}
               <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                en minutos
+                S/5,000 en minutos
               </span>
             </h1>
             

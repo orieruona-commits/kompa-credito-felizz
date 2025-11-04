@@ -16,6 +16,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
 import LoanDetailsForm from "./pages/LoanDetailsForm";
 import NotFound from "./pages/NotFound";
+import Disclaimer from "./pages/Disclaimer";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/private-admin-2025" element={<AdminLogin />} />
           <Route path="/loan-details" element={<LoanDetailsForm />} />
+          <Route path="/disclaimer" element={<Disclaimer />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

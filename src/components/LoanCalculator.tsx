@@ -97,6 +97,8 @@ export const LoanCalculator = () => {
 
       if (error) throw error;
 
+      toast.success("✅ Hemos recibido tus datos. Por favor completa tu pago de verificación de S/65 por WhatsApp para continuar.");
+
       // Navigate to payment instructions page
       navigate('/payment-instructions', {
         state: {

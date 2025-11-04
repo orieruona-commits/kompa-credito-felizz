@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
+import { HowItWorks } from "@/components/HowItWorks";
 import { LoanCalculator } from "@/components/LoanCalculator";
 import { Features } from "@/components/Features";
 import { Testimonials } from "@/components/Testimonials";
@@ -12,6 +13,7 @@ const Index = () => {
       <Navbar />
       <main className="flex-grow">
         <Hero />
+        <HowItWorks />
         
         {/* Calculator Section */}
         <section id="loan-calculator" className="py-16 md:py-20 bg-muted/30">
@@ -61,26 +63,42 @@ const Index = () => {
             <div className="max-w-3xl mx-auto space-y-4">
               <details className="bg-background p-6 rounded-lg shadow-card">
                 <summary className="font-semibold cursor-pointer">
-                  ¿Cuáles son los requisitos para solicitar un préstamo?
+                  ¿Por qué debo pagar S/65 de verificación?
                 </summary>
                 <p className="mt-3 text-muted-foreground">
-                  Solo necesitas ser mayor de 18 años, tener DNI peruano vigente, y contar con un ingreso mensual verificable. ¡Así de simple!
+                  El pago de S/65 es una tarifa única de verificación y procesamiento de tu solicitud. Esto nos permite validar tu información y procesar tu préstamo de manera segura.
                 </p>
               </details>
               <details className="bg-background p-6 rounded-lg shadow-card">
                 <summary className="font-semibold cursor-pointer">
-                  ¿Cuánto tiempo demora la aprobación?
+                  ¿Cuánto tiempo tarda la aprobación?
                 </summary>
                 <p className="mt-3 text-muted-foreground">
-                  La aprobación es inmediata. Una vez completada tu solicitud, recibirás una respuesta en minutos. El desembolso se realiza en 24 horas hábiles.
+                  Una vez que completes el pago de verificación, nuestro equipo revisará tu solicitud en menos de 24 horas. Te contactaremos por WhatsApp o correo con la decisión.
                 </p>
               </details>
               <details className="bg-background p-6 rounded-lg shadow-card">
                 <summary className="font-semibold cursor-pointer">
-                  ¿Puedo pagar antes de tiempo?
+                  ¿Necesito garantía o aval?
                 </summary>
                 <p className="mt-3 text-muted-foreground">
-                  ¡Por supuesto! Puedes pagar tu préstamo antes de tiempo sin penalidades. Además, te beneficiarás de un descuento en los intereses.
+                  No. Nuestros préstamos no requieren aval ni garantía. Solo necesitas ser mayor de edad, tener DNI vigente y cumplir con el pago de verificación.
+                </p>
+              </details>
+              <details className="bg-background p-6 rounded-lg shadow-card">
+                <summary className="font-semibold cursor-pointer">
+                  ¿Es seguro proporcionar mis datos personales?
+                </summary>
+                <p className="mt-3 text-muted-foreground">
+                  Sí, totalmente seguro. Todos tus datos están protegidos con encriptación y solo son visibles para nuestro equipo administrativo. Nunca compartimos tu información con terceros.
+                </p>
+              </details>
+              <details className="bg-background p-6 rounded-lg shadow-card">
+                <summary className="font-semibold cursor-pointer">
+                  ¿Cómo realizo el pago de verificación?
+                </summary>
+                <p className="mt-3 text-muted-foreground">
+                  Después de enviar tu formulario, te enviaremos las instrucciones de pago por WhatsApp. Puedes pagar mediante transferencia bancaria, Yape o Plin.
                 </p>
               </details>
             </div>

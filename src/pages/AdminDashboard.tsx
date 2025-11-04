@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
+import * as XLSX from 'xlsx';
 import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CheckCircle, Clock, Search, Filter, MessageCircle, LogOut } from "lucide-react";
+import { CheckCircle, Clock, Search, Filter, MessageCircle, LogOut, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -180,6 +181,31 @@ const AdminDashboard = () => {
     return format(new Date(dateString), "dd MMM yyyy HH:mm", { locale: es });
   };
 
+  const exportToExcel = () => {
+    const exportData = filteredApplications.map(app => ({
+      'Nombre': app.full_name || 'N/A',
+      'Email': app.email,
+      'Teléfono': app.phone || 'N/A',
+      'Monto': app.amount,
+      'Plazo (meses)': app.term,
+      'Tipo de Pago': app.payment_type === 'monthly' ? 'Mensual' : 'Pago único',
+      'Estado': getStatusLabel(app.status),
+      'Fecha': formatDate(app.created_at)
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Solicitudes");
+    
+    const fileName = `tukompa-solicitudes-${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+
+    toast({
+      title: "Exportación exitosa",
+      description: "Las solicitudes se han exportado a Excel correctamente.",
+    });
+  };
+
   const filteredApplications = applications.filter((app) => {
     const matchesSearch =
       app.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -221,14 +247,24 @@ const AdminDashboard = () => {
                 Gestiona las solicitudes de préstamo y confirma los pagos
               </p>
             </div>
-            <Button
-              variant="outline"
-              onClick={handleLogout}
-              className="flex items-center gap-2"
-            >
-              <LogOut className="w-4 h-4" />
-              Cerrar sesión
-            </Button>
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={exportToExcel}
+                className="flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Exportar a Excel
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleLogout}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                Cerrar sesión
+              </Button>
+            </div>
           </div>
 
           <Card className="p-6 mb-6">

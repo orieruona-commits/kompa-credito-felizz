@@ -62,6 +62,11 @@ export const Footer = () => {
                 </a>
               </li>
               <li>
+                <a href="/disclaimer" className="text-white/80 hover:text-secondary transition-colors">
+                  Aviso Legal
+                </a>
+              </li>
+              <li>
                 <a href="/complaints-book" className="text-white/80 hover:text-secondary transition-colors">
                   Libro de Reclamaciones
                 </a>
