@@ -3,6 +3,12 @@ import { Resend } from "https://esm.sh/resend@4.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+// Twilio credentials
+const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
+const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
+const TWILIO_WHATSAPP_FROM = Deno.env.get("TWILIO_WHATSAPP_FROM");
+const TWILIO_WHATSAPP_TO = Deno.env.get("TWILIO_WHATSAPP_TO");
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -19,6 +25,59 @@ interface LoanDetailsNotification {
   loan_purpose: string;
   email: string;
   preferred_contact_method: "whatsapp" | "email";
+}
+
+async function sendWhatsAppNotification(data: LoanDetailsNotification): Promise<void> {
+  if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_WHATSAPP_FROM || !TWILIO_WHATSAPP_TO) {
+    console.log("Twilio credentials not configured, skipping WhatsApp notification");
+    return;
+  }
+
+  const submissionDate = new Date().toLocaleString('es-PE', {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  });
+
+  const whatsappMessage = `📩 *Nueva Solicitud de Préstamo Recibida!*
+
+👤 *Nombre:* ${data.full_name}
+📱 *Teléfono:* ${data.phone}
+💳 *Monto Solicitado:* S/ ${data.amount.toLocaleString('es-PE')}
+🕒 *Fecha de Envío:* ${submissionDate}
+
+✅ Por favor revisa esta solicitud en el panel de administración.`;
+
+  const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
+  const authHeader = `Basic ${btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`)}`;
+
+  const formData = new URLSearchParams({
+    From: TWILIO_WHATSAPP_FROM,
+    To: TWILIO_WHATSAPP_TO,
+    Body: whatsappMessage,
+  });
+
+  try {
+    const response = await fetch(twilioUrl, {
+      method: "POST",
+      headers: {
+        "Authorization": authHeader,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: formData.toString(),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Twilio WhatsApp error:", errorText);
+      throw new Error(`Twilio API error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log("WhatsApp notification sent successfully:", result.sid);
+  } catch (error: any) {
+    console.error("Failed to send WhatsApp notification:", error);
+    throw error;
+  }
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -189,7 +248,18 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email sent successfully:", emailResponse);
 
-    return new Response(JSON.stringify(emailResponse), {
+    // Send WhatsApp notification
+    try {
+      await sendWhatsAppNotification(data);
+    } catch (whatsappError: any) {
+      console.error("WhatsApp notification failed, but continuing:", whatsappError);
+      // Don't fail the entire request if WhatsApp fails
+    }
+
+    return new Response(JSON.stringify({ 
+      email: emailResponse,
+      whatsapp: "sent"
+    }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
