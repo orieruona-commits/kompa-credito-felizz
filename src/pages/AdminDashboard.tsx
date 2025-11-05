@@ -37,6 +37,9 @@ interface Application {
   loan_purpose?: string | null;
   address?: string | null;
   supporting_document_url?: string | null;
+  document_verification_status?: string | null;
+  document_verification_result?: any;
+  document_verified_at?: string | null;
 }
 
 const AdminDashboard = () => {
@@ -335,6 +338,7 @@ const AdminDashboard = () => {
                     <TableHead>Monto</TableHead>
                     <TableHead>Plazo</TableHead>
                     <TableHead>Estado</TableHead>
+                    <TableHead>Documento</TableHead>
                     <TableHead>Fecha</TableHead>
                     <TableHead>Acciones</TableHead>
                   </TableRow>
@@ -342,7 +346,7 @@ const AdminDashboard = () => {
                 <TableBody>
                   {filteredApplications.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                         No se encontraron solicitudes
                       </TableCell>
                     </TableRow>
@@ -365,6 +369,42 @@ const AdminDashboard = () => {
                         </TableCell>
                         <TableCell>{app.term} meses</TableCell>
                         <TableCell>{getStatusBadge(app.status)}</TableCell>
+                        <TableCell>
+                          {app.supporting_document_url ? (
+                            <div className="space-y-1">
+                              <a 
+                                href={app.supporting_document_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-xs text-primary hover:underline block"
+                              >
+                                Ver documento
+                              </a>
+                              {app.document_verification_status && (
+                                <Badge 
+                                  variant={
+                                    app.document_verification_status === 'verified' ? 'default' :
+                                    app.document_verification_status === 'rejected' ? 'destructive' :
+                                    'secondary'
+                                  }
+                                  className="text-xs"
+                                >
+                                  {app.document_verification_status === 'verified' ? '✓ Verificado' :
+                                   app.document_verification_status === 'rejected' ? '✗ Rechazado' :
+                                   app.document_verification_status === 'pending' ? '⏳ Pendiente' : 
+                                   'Sin verificar'}
+                                </Badge>
+                              )}
+                              {app.document_verification_result?.confidence && (
+                                <p className="text-xs text-muted-foreground">
+                                  Confianza: {app.document_verification_result.confidence}%
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Sin documento</span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {formatDate(app.created_at)}
                         </TableCell>

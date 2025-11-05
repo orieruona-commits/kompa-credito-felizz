@@ -40,6 +40,8 @@ const LoanDetailsForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationResult, setVerificationResult] = useState<any>(null);
 
   const {
     register,
@@ -121,6 +123,48 @@ const LoanDetailsForm = () => {
         .eq("id", applicationId);
 
       if (updateError) throw updateError;
+
+      // If document was uploaded, verify it with AI
+      if (documentUrl) {
+        setIsVerifying(true);
+        toast({
+          title: "Verificando documento...",
+          description: "Nuestro sistema AI está analizando su documento de respaldo.",
+        });
+
+        const { data: verifyData, error: verifyError } = await supabase.functions.invoke("verify-document", {
+          body: {
+            documentUrl,
+            applicationId,
+          },
+        });
+
+        setIsVerifying(false);
+
+        if (verifyError) {
+          console.warn("Document verification failed:", verifyError);
+          toast({
+            title: "Advertencia",
+            description: "No se pudo verificar automáticamente el documento. Será revisado manualmente por nuestro equipo.",
+            variant: "default",
+          });
+        } else if (verifyData?.result) {
+          setVerificationResult(verifyData.result);
+          
+          if (verifyData.status === 'verified') {
+            toast({
+              title: "✓ Documento verificado",
+              description: "Su documento ha sido verificado exitosamente por nuestro sistema AI.",
+            });
+          } else if (verifyData.status === 'rejected') {
+            toast({
+              title: "Documento requiere revisión",
+              description: "Su documento necesita verificación manual. Nuestro equipo lo revisará pronto.",
+              variant: "default",
+            });
+          }
+        }
+      }
 
       // Send notification to admin
       const { error: notificationError } = await supabase.functions.invoke("send-loan-details-notification", {
@@ -416,16 +460,44 @@ const LoanDetailsForm = () => {
                 )}
               </div>
 
+              {verificationResult && (
+                <div className={`p-4 rounded-lg border ${
+                  verificationResult.recommendation === 'approve' 
+                    ? 'bg-green-50 border-green-200' 
+                    : verificationResult.recommendation === 'reject'
+                    ? 'bg-red-50 border-red-200'
+                    : 'bg-yellow-50 border-yellow-200'
+                }`}>
+                  <h4 className="font-semibold mb-2">
+                    {verificationResult.recommendation === 'approve' ? '✓ Documento Verificado' : '⚠ Resultado de Verificación'}
+                  </h4>
+                  <p className="text-sm mb-2">{verificationResult.reason}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Confianza: {verificationResult.confidence}% | Tipo: {verificationResult.documentType}
+                  </p>
+                  {verificationResult.findings?.concerns?.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-xs font-semibold">Observaciones:</p>
+                      <ul className="text-xs list-disc list-inside">
+                        {verificationResult.findings.concerns.map((concern: string, idx: number) => (
+                          <li key={idx}>{concern}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <Button
                 type="submit"
                 className="w-full"
                 size="lg"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isVerifying}
               >
-                {isSubmitting ? (
+                {isSubmitting || isVerifying ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Enviando...
+                    {isVerifying ? 'Verificando documento...' : 'Enviando...'}
                   </>
                 ) : (
                   "Enviar Solicitud"

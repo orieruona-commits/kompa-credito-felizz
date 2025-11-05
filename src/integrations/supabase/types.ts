@@ -20,6 +20,9 @@ export type Database = {
           amount: number
           created_at: string
           dni: string | null
+          document_verification_result: Json | null
+          document_verification_status: string | null
+          document_verified_at: string | null
           email: string
           employment_status: string | null
           full_name: string | null
@@ -40,6 +43,9 @@ export type Database = {
           amount: number
           created_at?: string
           dni?: string | null
+          document_verification_result?: Json | null
+          document_verification_status?: string | null
+          document_verified_at?: string | null
           email: string
           employment_status?: string | null
           full_name?: string | null
@@ -60,6 +66,9 @@ export type Database = {
           amount?: number
           created_at?: string
           dni?: string | null
+          document_verification_result?: Json | null
+          document_verification_status?: string | null
+          document_verified_at?: string | null
           email?: string
           employment_status?: string | null
           full_name?: string | null
