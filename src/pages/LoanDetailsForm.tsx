@@ -19,6 +19,10 @@ const loanDetailsSchema = z.object({
   phone: z.string().min(9, "Teléfono debe tener al menos 9 dígitos").max(15),
   address: z.string().min(10, "La dirección debe tener al menos 10 caracteres").max(200),
   amount: z.number().min(500, "El monto mínimo es S/500").max(5000, "El monto máximo es S/5,000"),
+  employment_status: z.enum(["employed", "self_employed", "student", "unemployed"], {
+    required_error: "Selecciona un estado laboral",
+  }),
+  monthly_income: z.number().min(0, "El ingreso mensual debe ser mayor a 0"),
   loan_purpose: z.string().min(10, "El motivo debe tener al menos 10 caracteres").max(500),
   email: z.string().email("Correo electrónico inválido").max(255),
   preferred_contact_method: z.enum(["whatsapp", "email"], {
@@ -35,6 +39,7 @@ const LoanDetailsForm = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   const {
     register,
@@ -43,6 +48,22 @@ const LoanDetailsForm = () => {
   } = useForm<LoanDetailsForm>({
     resolver: zodResolver(loanDetailsSchema),
   });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Error",
+          description: "El archivo no debe superar los 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      setUploadedFile(file);
+    }
+  };
 
   const onSubmit = async (data: LoanDetailsForm) => {
     if (!applicationId) {
@@ -57,6 +78,29 @@ const LoanDetailsForm = () => {
     setIsSubmitting(true);
 
     try {
+      let documentUrl = null;
+
+      // Upload file if provided
+      if (uploadedFile) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Usuario no autenticado");
+
+        const fileExt = uploadedFile.name.split('.').pop();
+        const fileName = `${user.id}/${applicationId}-${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('loan-documents')
+          .upload(fileName, uploadedFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('loan-documents')
+          .getPublicUrl(fileName);
+        
+        documentUrl = publicUrl;
+      }
+
       // Update application with loan details
       const { error: updateError } = await supabase
         .from("applications")
@@ -66,25 +110,29 @@ const LoanDetailsForm = () => {
           phone: data.phone,
           address: data.address,
           amount: data.amount,
+          employment_status: data.employment_status,
+          monthly_income: data.monthly_income,
           loan_purpose: data.loan_purpose,
           email: data.email,
           preferred_contact_method: data.preferred_contact_method,
+          supporting_document_url: documentUrl,
           status: "pending_review",
         })
         .eq("id", applicationId);
 
       if (updateError) throw updateError;
 
-      // Send email notification to admin
-      const { error: emailError } = await supabase.functions.invoke("send-loan-details-notification", {
+      // Send notification to admin
+      const { error: notificationError } = await supabase.functions.invoke("send-loan-details-notification", {
         body: {
           applicationId,
           ...data,
+          supporting_document_url: documentUrl,
         },
       });
 
-      if (emailError) {
-        console.warn("Email notification failed, but data was saved:", emailError);
+      if (notificationError) {
+        console.warn("Notification failed, but data was saved:", notificationError);
       }
 
       setIsSuccess(true);
@@ -127,9 +175,9 @@ const LoanDetailsForm = () => {
             <div className="flex justify-center mb-4">
               <CheckCircle2 className="w-16 h-16 text-green-600" />
             </div>
-            <CardTitle className="text-2xl">✅ Solicitud Enviada Exitosamente</CardTitle>
+            <CardTitle className="text-2xl">🎉 ¡Gracias!</CardTitle>
             <CardDescription className="text-base mt-4">
-              Hemos recibido sus datos. Nuestro equipo revisará su solicitud y se pondrá en contacto con usted pronto.
+              Su solicitud de préstamo está ahora completa. El equipo de TuKompa revisará sus detalles y se pondrá en contacto con usted en breve.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -270,6 +318,44 @@ const LoanDetailsForm = () => {
                 </p>
               </div>
 
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="employment_status">Estado Laboral *</Label>
+                  <select
+                    id="employment_status"
+                    {...register("employment_status")}
+                    className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                      errors.employment_status ? "border-destructive" : ""
+                    }`}
+                  >
+                    <option value="">Seleccionar...</option>
+                    <option value="employed">Empleado</option>
+                    <option value="self_employed">Independiente</option>
+                    <option value="student">Estudiante</option>
+                    <option value="unemployed">Desempleado</option>
+                  </select>
+                  {errors.employment_status && (
+                    <p className="text-sm text-destructive">{errors.employment_status.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="monthly_income">Ingreso Mensual (S/) *</Label>
+                  <Input
+                    id="monthly_income"
+                    type="number"
+                    min="0"
+                    step="50"
+                    placeholder="Ej: 2000"
+                    {...register("monthly_income", { valueAsNumber: true })}
+                    className={errors.monthly_income ? "border-destructive" : ""}
+                  />
+                  {errors.monthly_income && (
+                    <p className="text-sm text-destructive">{errors.monthly_income.message}</p>
+                  )}
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="loan_purpose">Motivo del Préstamo *</Label>
                 <Textarea
@@ -308,6 +394,25 @@ const LoanDetailsForm = () => {
                 </div>
                 {errors.preferred_contact_method && (
                   <p className="text-sm text-destructive">{errors.preferred_contact_method.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="supporting_document">Documento de Respaldo (Opcional)</Label>
+                <Input
+                  id="supporting_document"
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                  onChange={handleFileChange}
+                  className="cursor-pointer"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Máximo 5MB. Formatos: PDF, JPG, PNG, DOC, DOCX
+                </p>
+                {uploadedFile && (
+                  <p className="text-sm text-primary">
+                    ✓ Archivo seleccionado: {uploadedFile.name}
+                  </p>
                 )}
               </div>
 

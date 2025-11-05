@@ -31,6 +31,12 @@ interface Application {
   status: string;
   created_at: string;
   payment_type: string;
+  employment_status?: string | null;
+  monthly_income?: number | null;
+  dni?: string | null;
+  loan_purpose?: string | null;
+  address?: string | null;
+  supporting_document_url?: string | null;
 }
 
 const AdminDashboard = () => {
@@ -182,14 +188,30 @@ const AdminDashboard = () => {
   };
 
   const exportToExcel = () => {
+    const getEmploymentLabel = (status?: string | null) => {
+      const labels: Record<string, string> = {
+        employed: 'Empleado',
+        self_employed: 'Independiente',
+        student: 'Estudiante',
+        unemployed: 'Desempleado',
+      };
+      return status ? labels[status] || status : 'N/A';
+    };
+
     const exportData = filteredApplications.map(app => ({
       'Nombre': app.full_name || 'N/A',
+      'DNI': app.dni || 'N/A',
       'Email': app.email,
       'Teléfono': app.phone || 'N/A',
+      'Dirección': app.address || 'N/A',
       'Monto': app.amount,
+      'Estado Laboral': getEmploymentLabel(app.employment_status),
+      'Ingreso Mensual': app.monthly_income || 'N/A',
+      'Motivo del Préstamo': app.loan_purpose || 'N/A',
       'Plazo (meses)': app.term,
       'Tipo de Pago': app.payment_type === 'monthly' ? 'Mensual' : 'Pago único',
       'Estado': getStatusLabel(app.status),
+      'Documento Adjunto': app.supporting_document_url ? 'Sí' : 'No',
       'Fecha': formatDate(app.created_at)
     }));
 

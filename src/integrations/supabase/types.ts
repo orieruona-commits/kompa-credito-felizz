@@ -21,13 +21,16 @@ export type Database = {
           created_at: string
           dni: string | null
           email: string
+          employment_status: string | null
           full_name: string | null
           id: string
           loan_purpose: string | null
+          monthly_income: number | null
           payment_type: string
           phone: string | null
           preferred_contact_method: string | null
           status: string
+          supporting_document_url: string | null
           term: number
           updated_at: string
           user_id: string
@@ -38,13 +41,16 @@ export type Database = {
           created_at?: string
           dni?: string | null
           email: string
+          employment_status?: string | null
           full_name?: string | null
           id?: string
           loan_purpose?: string | null
+          monthly_income?: number | null
           payment_type: string
           phone?: string | null
           preferred_contact_method?: string | null
           status?: string
+          supporting_document_url?: string | null
           term: number
           updated_at?: string
           user_id: string
@@ -55,13 +61,16 @@ export type Database = {
           created_at?: string
           dni?: string | null
           email?: string
+          employment_status?: string | null
           full_name?: string | null
           id?: string
           loan_purpose?: string | null
+          monthly_income?: number | null
           payment_type?: string
           phone?: string | null
           preferred_contact_method?: string | null
           status?: string
+          supporting_document_url?: string | null
           term?: number
           updated_at?: string
           user_id?: string

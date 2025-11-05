@@ -22,9 +22,12 @@ interface LoanDetailsNotification {
   phone: string;
   address: string;
   amount: number;
+  employment_status?: string;
+  monthly_income?: number;
   loan_purpose: string;
   email: string;
   preferred_contact_method: "whatsapp" | "email";
+  supporting_document_url?: string;
 }
 
 async function sendWhatsAppNotification(data: LoanDetailsNotification): Promise<void> {
@@ -38,14 +41,16 @@ async function sendWhatsAppNotification(data: LoanDetailsNotification): Promise<
     timeStyle: 'short'
   });
 
-  const whatsappMessage = `📩 *Nueva Solicitud de Préstamo Recibida!*
+  const whatsappMessage = `-----------------------------------
+📩 *Nueva Solicitud de Préstamo Recibida!*
 
 👤 *Nombre:* ${data.full_name}
 📱 *Teléfono:* ${data.phone}
 💳 *Monto Solicitado:* S/ ${data.amount.toLocaleString('es-PE')}
 🕒 *Fecha de Envío:* ${submissionDate}
 
-✅ Por favor revisa esta solicitud en el panel de administración.`;
+✅ Por favor revisa esta solicitud en el panel de administración.
+-----------------------------------`;
 
   const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
   const authHeader = `Basic ${btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`)}`;
@@ -213,10 +218,31 @@ const handler = async (req: Request): Promise<Response> => {
                 <div class="detail-value">${data.address}</div>
               </div>
               
+              ${data.employment_status ? `
+              <div class="detail-row">
+                <div class="detail-label">Estado Laboral:</div>
+                <div class="detail-value">${data.employment_status === 'employed' ? 'Empleado' : data.employment_status === 'self_employed' ? 'Independiente' : data.employment_status === 'student' ? 'Estudiante' : 'Desempleado'}</div>
+              </div>
+              ` : ''}
+              
+              ${data.monthly_income ? `
+              <div class="detail-row">
+                <div class="detail-label">Ingreso Mensual:</div>
+                <div class="detail-value">S/ ${data.monthly_income.toLocaleString('es-PE')}</div>
+              </div>
+              ` : ''}
+              
               <div class="detail-row">
                 <div class="detail-label">Contacto Preferido:</div>
                 <div class="detail-value"><strong>${contactMethod}</strong></div>
               </div>
+              
+              ${data.supporting_document_url ? `
+              <div class="detail-row">
+                <div class="detail-label">Documento Adjunto:</div>
+                <div class="detail-value"><a href="${data.supporting_document_url}" style="color: #8B5CF6;">Ver documento</a></div>
+              </div>
+              ` : ''}
               
               <div class="amount">
                 Monto Solicitado: S/ ${data.amount.toLocaleString('es-PE')}
