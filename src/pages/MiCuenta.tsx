@@ -32,6 +32,41 @@ const MiCuenta = () => {
     checkAuth();
   }, []);
 
+  useEffect(() => {
+    if (!user) return;
+
+    // Subscribe to realtime updates for the user's application
+    const channel = supabase
+      .channel('application-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'applications',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Application updated:', payload);
+          const updatedApp = payload.new as Application;
+          setApplication(updatedApp);
+          
+          // Show toast when payment is confirmed
+          if (updatedApp.status === 'processing') {
+            toast({
+              title: "¡Pago confirmado!",
+              description: "Tu pago ha sido confirmado. Ahora puedes completar los detalles de tu préstamo.",
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const checkAuth = async () => {
     try {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
