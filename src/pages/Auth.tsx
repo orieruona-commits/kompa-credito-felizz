@@ -20,10 +20,22 @@ export default function Auth() {
 
   useEffect(() => {
     // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
-        const from = location.state?.from || "/dashboard";
-        navigate(from, { replace: true });
+        // Check if user is admin
+        const { data: roles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .eq("role", "admin")
+          .single();
+        
+        if (roles) {
+          navigate("/admin", { replace: true });
+        } else {
+          const from = location.state?.from || "/mi-cuenta";
+          navigate(from, { replace: true });
+        }
       }
     });
   }, [navigate, location]);
@@ -33,14 +45,14 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             full_name: fullName,
           },
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/mi-cuenta`,
         },
       });
 
@@ -48,9 +60,22 @@ export default function Auth() {
 
       toast.success("¡Cuenta creada exitosamente! Redirigiendo...");
       
-      // Wait a moment for the session to be established
-      setTimeout(() => {
-        navigate("/dashboard");
+      // Wait a moment for the session to be established, then check if admin
+      setTimeout(async () => {
+        if (data.user) {
+          const { data: roles } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", data.user.id)
+            .eq("role", "admin")
+            .single();
+          
+          if (roles) {
+            navigate("/admin");
+          } else {
+            navigate("/mi-cuenta");
+          }
+        }
       }, 1000);
     } catch (error: any) {
       toast.error(error.message || "Error al crear la cuenta");
@@ -64,16 +89,31 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
 
-      toast.success("¡Bienvenido de nuevo!");
-      const from = location.state?.from || "/dashboard";
-      navigate(from, { replace: true });
+      // Check if user is admin
+      if (data.user) {
+        const { data: roles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", data.user.id)
+          .eq("role", "admin")
+          .single();
+        
+        if (roles) {
+          toast.success("¡Bienvenido, Administrador!");
+          navigate("/admin", { replace: true });
+        } else {
+          toast.success("¡Bienvenido de nuevo!");
+          const from = location.state?.from || "/mi-cuenta";
+          navigate(from, { replace: true });
+        }
+      }
     } catch (error: any) {
       toast.error(error.message || "Error al iniciar sesión");
     } finally {

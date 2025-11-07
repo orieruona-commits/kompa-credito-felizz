@@ -104,15 +104,17 @@ export const Navbar = () => {
             
             {user ? (
               <div className="flex items-center gap-2">
-                <Button 
-                  onClick={() => navigate("/dashboard")} 
-                  variant="outline" 
-                  size="sm"
-                  className="bg-white text-primary border-white hover:bg-secondary hover:text-white hover:border-secondary"
-                >
-                  <User className="h-4 w-4 mr-2" />
-                  Mi Panel
-                </Button>
+                {!isAdmin && (
+                  <Button 
+                    onClick={() => navigate("/mi-cuenta")} 
+                    variant="outline" 
+                    size="sm"
+                    className="bg-white text-primary border-white hover:bg-secondary hover:text-white hover:border-secondary"
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Mi Cuenta
+                  </Button>
+                )}
                 {isAdmin && (
                   <Button 
                     onClick={() => navigate("/admin")} 
@@ -120,7 +122,7 @@ export const Navbar = () => {
                     size="sm"
                     className="bg-secondary text-white border-secondary hover:bg-secondary/90"
                   >
-                    Admin
+                    Admin Dashboard
                   </Button>
                 )}
                 <Button 
@@ -186,21 +188,23 @@ export const Navbar = () => {
                 <div className="pt-2 border-t border-primary-glow mt-2">
                   {user ? (
                     <>
-                      <Button 
-                        onClick={() => { navigate("/dashboard"); setIsOpen(false); }} 
-                        variant="outline" 
-                        className="w-full justify-start mb-2 bg-white text-primary border-white hover:bg-secondary hover:text-white"
-                      >
-                        <User className="h-4 w-4 mr-2" />
-                        Mi Panel
-                      </Button>
+                      {!isAdmin && (
+                        <Button 
+                          onClick={() => { navigate("/mi-cuenta"); setIsOpen(false); }} 
+                          variant="outline" 
+                          className="w-full justify-start mb-2 bg-white text-primary border-white hover:bg-secondary hover:text-white"
+                        >
+                          <User className="h-4 w-4 mr-2" />
+                          Mi Cuenta
+                        </Button>
+                      )}
                       {isAdmin && (
                         <Button 
                           onClick={() => { navigate("/admin"); setIsOpen(false); }} 
                           variant="outline" 
                           className="w-full justify-start mb-2 bg-secondary text-white border-secondary hover:bg-secondary/90"
                         >
-                          Panel Admin
+                          Admin Dashboard
                         </Button>
                       )}
                       <Button 

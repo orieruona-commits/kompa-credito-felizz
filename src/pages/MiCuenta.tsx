@@ -27,6 +27,7 @@ const MiCuenta = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [application, setApplication] = useState<Application | null>(null);
+  const [showRedirectMessage, setShowRedirectMessage] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -49,14 +50,25 @@ const MiCuenta = () => {
         (payload) => {
           console.log('Application updated:', payload);
           const updatedApp = payload.new as Application;
+          const previousStatus = application?.status;
           setApplication(updatedApp);
           
-          // Show toast when payment is confirmed
-          if (updatedApp.status === 'processing') {
+          // Show redirect message and scroll to form when payment is confirmed
+          if (previousStatus === 'awaiting_fee' && updatedApp.status === 'processing') {
+            setShowRedirectMessage(true);
             toast({
               title: "¡Pago confirmado!",
               description: "Tu pago ha sido confirmado. Ahora puedes completar los detalles de tu préstamo.",
             });
+            
+            // Scroll to form after 2 seconds
+            setTimeout(() => {
+              const formElement = document.getElementById('loan-details-form');
+              if (formElement) {
+                formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+              setShowRedirectMessage(false);
+            }, 2000);
           }
         }
       )
@@ -65,7 +77,7 @@ const MiCuenta = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, application?.status]);
 
   const checkAuth = async () => {
     try {
@@ -241,7 +253,16 @@ const MiCuenta = () => {
             )}
           </Card>
 
-          {canFillDetails && (
+          {showRedirectMessage && (
+            <Alert className="mb-6 bg-green-50 border-green-200 animate-in fade-in duration-500">
+              <CheckCircle className="h-4 w-4 text-green-600 animate-pulse" />
+              <AlertDescription className="text-green-800 font-semibold">
+                ✅ Pago confirmado. Cargando tu formulario de préstamo...
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {canFillDetails && !showRedirectMessage && (
             <>
               <Alert className="mb-6 bg-green-50 border-green-200">
                 <CheckCircle className="h-4 w-4 text-green-600" />
@@ -250,7 +271,7 @@ const MiCuenta = () => {
                 </AlertDescription>
               </Alert>
 
-              <Card className="p-6">
+              <Card id="loan-details-form" className="p-6 scroll-mt-8">
                 <h2 className="text-2xl font-bold mb-6 text-primary">
                   Detalles de Solicitud
                 </h2>
