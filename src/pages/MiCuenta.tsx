@@ -148,9 +148,14 @@ const MiCuenta = () => {
         color: "text-yellow-600",
       },
       processing: {
-        label: "Pago Confirmado",
+        label: "Pago Confirmado - Complete el Formulario",
         icon: CheckCircle,
         color: "text-green-600",
+      },
+      submitted: {
+        label: "Solicitud Enviada - En Revisión",
+        icon: CheckCircle,
+        color: "text-blue-600",
       },
       approved: {
         label: "Aprobado",
@@ -211,6 +216,7 @@ const MiCuenta = () => {
   const statusInfo = getStatusInfo(application.status);
   const StatusIcon = statusInfo.icon;
   const canFillDetails = application.status === "processing";
+  const isSubmitted = application.status === "submitted";
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -244,9 +250,10 @@ const MiCuenta = () => {
             </div>
 
             {application.status === "awaiting_fee" && (
-              <Alert className="mt-4">
-                <AlertDescription>
-                  ⏳ Estamos esperando la confirmación de tu pago de ₱65 soles.
+              <Alert className="mt-4 bg-yellow-50 border-yellow-200">
+                <Clock className="h-4 w-4 text-yellow-600" />
+                <AlertDescription className="text-yellow-800">
+                  ⏳ Tu pago está pendiente de confirmación. Por favor, espera mientras verificamos tu pago de S/65.
                   Una vez confirmado, podrás completar los detalles de tu solicitud.
                 </AlertDescription>
               </Alert>
@@ -280,12 +287,21 @@ const MiCuenta = () => {
             </>
           )}
 
+          {isSubmitted && (
+            <Alert className="bg-blue-50 border-blue-200">
+              <CheckCircle className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-800">
+                ✅ Hemos recibido tu solicitud completa. Nuestro equipo revisará tu información y te contactará en las próximas 24-48 horas.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {application.status === "approved" && (
             <Alert className="bg-green-50 border-green-200">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
                 🎉 ¡Felicitaciones! Tu préstamo ha sido aprobado.
-                Nos pondremos en contacto contigo pronto.
+                Nos pondremos en contacto contigo pronto para finalizar los detalles.
               </AlertDescription>
             </Alert>
           )}

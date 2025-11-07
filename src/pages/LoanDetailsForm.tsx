@@ -109,7 +109,7 @@ const LoanDetailsForm = ({ applicationId }: LoanDetailsFormProps) => {
           email: data.email,
           preferred_contact_method: data.preferred_contact_method,
           supporting_document_url: documentUrl,
-          status: "pending_review",
+          status: "submitted",
         })
         .eq("id", applicationId);
 

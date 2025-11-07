@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -16,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CheckCircle, Clock, Search, Filter, MessageCircle, LogOut, Download } from "lucide-react";
+import { CheckCircle, Clock, Search, MessageCircle, LogOut, Download, Bell, Eye } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -48,11 +49,47 @@ const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [applications, setApplications] = useState<Application[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState<string>("pending");
 
   useEffect(() => {
     checkAdminAccess();
   }, []);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    // Subscribe to real-time updates for applications
+    const channel = supabase
+      .channel('admin-applications-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'applications'
+        },
+        (payload) => {
+          console.log('Application change detected:', payload);
+          
+          if (payload.eventType === 'INSERT') {
+            const newApp = payload.new as Application;
+            if (newApp.status === 'submitted') {
+              toast({
+                title: "📩 Nueva Solicitud Recibida",
+                description: `Solicitud de ${newApp.full_name || 'usuario'} por ${formatCurrency(newApp.amount)}`,
+              });
+            }
+          }
+          
+          loadApplications();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isAdmin]);
 
   const checkAdminAccess = async () => {
     try {
@@ -201,7 +238,8 @@ const AdminDashboard = () => {
       return status ? labels[status] || status : 'N/A';
     };
 
-    const exportData = filteredApplications.map(app => ({
+    const dataToExport = getFilteredApplications(activeTab);
+    const exportData = dataToExport.map(app => ({
       'Nombre': app.full_name || 'N/A',
       'DNI': app.dni || 'N/A',
       'Email': app.email,
@@ -231,16 +269,36 @@ const AdminDashboard = () => {
     });
   };
 
-  const filteredApplications = applications.filter((app) => {
-    const matchesSearch =
-      app.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.phone?.includes(searchTerm);
+  const getFilteredApplications = (tabFilter: string) => {
+    return applications.filter((app) => {
+      const matchesSearch =
+        app.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        app.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        app.phone?.includes(searchTerm);
 
-    const matchesStatus = statusFilter === "all" || app.status === statusFilter;
+      let matchesTab = false;
+      if (tabFilter === "pending") {
+        matchesTab = app.status === "awaiting_fee";
+      } else if (tabFilter === "confirmed") {
+        matchesTab = app.status === "processing";
+      } else if (tabFilter === "submitted") {
+        matchesTab = app.status === "submitted" || 
+                     (app.full_name !== null && app.dni !== null && app.status === "processing");
+      } else if (tabFilter === "approved") {
+        matchesTab = app.status === "approved";
+      } else if (tabFilter === "rejected") {
+        matchesTab = app.status === "rejected";
+      }
 
-    return matchesSearch && matchesStatus;
-  });
+      return matchesSearch && matchesTab;
+    });
+  };
+
+  const pendingApplications = getFilteredApplications("pending");
+  const confirmedApplications = getFilteredApplications("confirmed");
+  const submittedApplications = getFilteredApplications("submitted");
+  const approvedApplications = getFilteredApplications("approved");
+  const rejectedApplications = getFilteredApplications("rejected");
 
   if (loading) {
     return (
@@ -303,175 +361,229 @@ const AdminDashboard = () => {
                   className="pl-10"
                 />
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={statusFilter === "all" ? "default" : "outline"}
-                  onClick={() => setStatusFilter("all")}
-                  size="sm"
-                >
-                  <Filter className="w-4 h-4 mr-2" />
-                  Todos
-                </Button>
-                <Button
-                  variant={statusFilter === "awaiting_fee" ? "default" : "outline"}
-                  onClick={() => setStatusFilter("awaiting_fee")}
-                  size="sm"
-                >
-                  Pendientes
-                </Button>
-                <Button
-                  variant={statusFilter === "processing" ? "default" : "outline"}
-                  onClick={() => setStatusFilter("processing")}
-                  size="sm"
-                >
-                  Confirmados
-                </Button>
-              </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Contacto</TableHead>
-                    <TableHead>Monto</TableHead>
-                    <TableHead>Plazo</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Documento</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredApplications.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                        No se encontraron solicitudes
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredApplications.map((app) => (
-                      <TableRow key={app.id}>
-                        <TableCell className="font-medium">
-                          {app.full_name || "Sin nombre"}
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm">
-                            <div>{app.email}</div>
-                            {app.phone && (
-                              <div className="text-muted-foreground">{app.phone}</div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-semibold">
-                          {formatCurrency(app.amount)}
-                        </TableCell>
-                        <TableCell>{app.term} meses</TableCell>
-                        <TableCell>{getStatusBadge(app.status)}</TableCell>
-                        <TableCell>
-                          {app.supporting_document_url ? (
-                            <div className="space-y-1">
-                              <a 
-                                href={app.supporting_document_url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-xs text-primary hover:underline block"
-                              >
-                                Ver documento
-                              </a>
-                              {app.document_verification_status && (
-                                <Badge 
-                                  variant={
-                                    app.document_verification_status === 'verified' ? 'default' :
-                                    app.document_verification_status === 'rejected' ? 'destructive' :
-                                    'secondary'
-                                  }
-                                  className="text-xs"
-                                >
-                                  {app.document_verification_status === 'verified' ? '✓ Verificado' :
-                                   app.document_verification_status === 'rejected' ? '✗ Rechazado' :
-                                   app.document_verification_status === 'pending' ? '⏳ Pendiente' : 
-                                   'Sin verificar'}
-                                </Badge>
-                              )}
-                              {app.document_verification_result?.confidence && (
-                                <p className="text-xs text-muted-foreground">
-                                  Confianza: {app.document_verification_result.confidence}%
-                                </p>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">Sin documento</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {formatDate(app.created_at)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col gap-2">
-                            {app.status === "awaiting_fee" && (
-                              <Button
-                                size="sm"
-                                onClick={() => updateApplicationStatus(app.id, "processing")}
-                                className="w-full"
-                              >
-                                <CheckCircle className="w-4 h-4 mr-1" />
-                                Confirmar Pago
-                              </Button>
-                            )}
-                            {app.status === "processing" && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => updateApplicationStatus(app.id, "awaiting_fee")}
-                                className="w-full"
-                              >
-                                <Clock className="w-4 h-4 mr-1" />
-                                Marcar Pendiente
-                              </Button>
-                            )}
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              asChild
-                              className="w-full"
-                            >
-                              <a
-                                href={`https://wa.me/${app.phone?.replace(/\D/g, '')}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <MessageCircle className="w-4 h-4 mr-1" />
-                                WhatsApp
-                              </a>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="pending" className="relative">
+                  Pendientes
+                  {pendingApplications.length > 0 && (
+                    <Badge className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center">
+                      {pendingApplications.length}
+                    </Badge>
                   )}
-                </TableBody>
-              </Table>
-            </div>
+                </TabsTrigger>
+                <TabsTrigger value="confirmed">
+                  Confirmados
+                  {confirmedApplications.length > 0 && (
+                    <Badge className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center">
+                      {confirmedApplications.length}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="submitted">
+                  Formularios
+                  {submittedApplications.length > 0 && (
+                    <Badge className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-green-600">
+                      {submittedApplications.length}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="approved">Aprobados</TabsTrigger>
+                <TabsTrigger value="rejected">Rechazados</TabsTrigger>
+              </TabsList>
+
+              {["pending", "confirmed", "submitted", "approved", "rejected"].map((tab) => {
+                const tabApplications = getFilteredApplications(tab);
+                return (
+                  <TabsContent key={tab} value={tab} className="mt-6">
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Nombre</TableHead>
+                            <TableHead>DNI</TableHead>
+                            <TableHead>Contacto</TableHead>
+                            <TableHead>Monto</TableHead>
+                            <TableHead>Plazo</TableHead>
+                            <TableHead>Estado</TableHead>
+                            {tab === "submitted" && <TableHead>Detalles</TableHead>}
+                            <TableHead>Documento</TableHead>
+                            <TableHead>Fecha</TableHead>
+                            <TableHead>Acciones</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {tabApplications.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                                No hay solicitudes en esta categoría
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            tabApplications.map((app) => (
+                              <TableRow key={app.id}>
+                                <TableCell className="font-medium">
+                                  {app.full_name || "Sin nombre"}
+                                </TableCell>
+                                <TableCell className="text-sm">
+                                  {app.dni || "N/A"}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-sm">
+                                    <div>{app.email}</div>
+                                    {app.phone && (
+                                      <div className="text-muted-foreground">{app.phone}</div>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="font-semibold">
+                                  {formatCurrency(app.amount)}
+                                </TableCell>
+                                <TableCell>{app.term} meses</TableCell>
+                                <TableCell>{getStatusBadge(app.status)}</TableCell>
+                                {tab === "submitted" && (
+                                  <TableCell>
+                                    <div className="text-xs space-y-1">
+                                      <div><strong>Dirección:</strong> {app.address || "N/A"}</div>
+                                      <div><strong>Empleo:</strong> {app.employment_status || "N/A"}</div>
+                                      <div><strong>Ingreso:</strong> {app.monthly_income ? formatCurrency(app.monthly_income) : "N/A"}</div>
+                                      <div><strong>Motivo:</strong> {app.loan_purpose?.substring(0, 50) || "N/A"}...</div>
+                                    </div>
+                                  </TableCell>
+                                )}
+                                <TableCell>
+                                  {app.supporting_document_url ? (
+                                    <div className="space-y-1">
+                                      <a 
+                                        href={app.supporting_document_url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-xs text-primary hover:underline flex items-center gap-1"
+                                      >
+                                        <Eye className="w-3 h-3" />
+                                        Ver
+                                      </a>
+                                      {app.document_verification_status && (
+                                        <Badge 
+                                          variant={
+                                            app.document_verification_status === 'verified' ? 'default' :
+                                            app.document_verification_status === 'rejected' ? 'destructive' :
+                                            'secondary'
+                                          }
+                                          className="text-xs"
+                                        >
+                                          {app.document_verification_status === 'verified' ? '✓' :
+                                           app.document_verification_status === 'rejected' ? '✗' :
+                                           '⏳'}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground">Sin doc</span>
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-sm text-muted-foreground">
+                                  {formatDate(app.created_at)}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex flex-col gap-2">
+                                    {app.status === "awaiting_fee" && (
+                                      <Button
+                                        size="sm"
+                                        onClick={() => updateApplicationStatus(app.id, "processing")}
+                                        className="w-full"
+                                      >
+                                        <CheckCircle className="w-4 h-4 mr-1" />
+                                        Confirmar
+                                      </Button>
+                                    )}
+                                    {app.status === "processing" && (
+                                      <>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => updateApplicationStatus(app.id, "awaiting_fee")}
+                                          className="w-full"
+                                        >
+                                          <Clock className="w-4 h-4 mr-1" />
+                                          Pendiente
+                                        </Button>
+                                      </>
+                                    )}
+                                    {app.status === "submitted" && (
+                                      <>
+                                        <Button
+                                          size="sm"
+                                          onClick={() => updateApplicationStatus(app.id, "approved")}
+                                          className="w-full"
+                                        >
+                                          Aprobar
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="destructive"
+                                          onClick={() => updateApplicationStatus(app.id, "rejected")}
+                                          className="w-full"
+                                        >
+                                          Rechazar
+                                        </Button>
+                                      </>
+                                    )}
+                                    {app.phone && (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        asChild
+                                        className="w-full"
+                                      >
+                                        <a
+                                          href={`https://wa.me/${app.phone?.replace(/\D/g, '')}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                        >
+                                          <MessageCircle className="w-4 h-4 mr-1" />
+                                          WhatsApp
+                                        </a>
+                                      </Button>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </TabsContent>
+                );
+              })}
+            </Tabs>
           </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-2 text-primary">Total Solicitudes</h3>
+              <h3 className="text-sm font-semibold mb-2 text-primary flex items-center gap-2">
+                <Bell className="w-4 h-4" />
+                Total
+              </h3>
               <p className="text-3xl font-bold">{applications.length}</p>
             </Card>
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-2 text-yellow-600">Pendientes de Pago</h3>
-              <p className="text-3xl font-bold">
-                {applications.filter((a) => a.status === "awaiting_fee").length}
-              </p>
+              <h3 className="text-sm font-semibold mb-2 text-yellow-600">Pendientes</h3>
+              <p className="text-3xl font-bold">{pendingApplications.length}</p>
             </Card>
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-2 text-green-600">Pagos Confirmados</h3>
-              <p className="text-3xl font-bold">
-                {applications.filter((a) => a.status === "processing").length}
-              </p>
+              <h3 className="text-sm font-semibold mb-2 text-blue-600">Confirmados</h3>
+              <p className="text-3xl font-bold">{confirmedApplications.length}</p>
+            </Card>
+            <Card className="p-6">
+              <h3 className="text-sm font-semibold mb-2 text-green-600">Formularios</h3>
+              <p className="text-3xl font-bold">{submittedApplications.length}</p>
+            </Card>
+            <Card className="p-6">
+              <h3 className="text-sm font-semibold mb-2 text-purple-600">Aprobados</h3>
+              <p className="text-3xl font-bold">{approvedApplications.length}</p>
             </Card>
           </div>
         </div>
